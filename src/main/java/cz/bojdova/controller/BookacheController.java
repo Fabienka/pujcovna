@@ -5,6 +5,8 @@ import java.util.List;
 
 import cz.bojdova.dao.BookDao;
 import cz.bojdova.dao.UserDao;
+import cz.bojdova.dao.impl.BookDaoImpl;
+import cz.bojdova.dao.impl.UserDaoImpl;
 import cz.bojdova.model.Book;
 import cz.bojdova.model.User;
 
@@ -13,6 +15,14 @@ public class BookacheController {
     private final UserDao userDao;
     private final List<Book> books;
     private final List<User> users;
+
+    // Default constructor
+    public BookacheController() {
+        this.bookDao = new BookDaoImpl();
+        this.userDao = new UserDaoImpl();
+        this.books = new ArrayList<>(bookDao.getAllBooks());
+        this.users = new ArrayList<>(userDao.getAllUsers());
+    }
 
     public BookacheController(BookDao bookDao, UserDao userDao) {
         this.bookDao = bookDao;
@@ -49,6 +59,11 @@ public class BookacheController {
         userDao.saveAllUsers(users);
     }
 
+    public void removeUser(int id) {
+        users.remove(id);
+        userDao.saveAllUsers(users);
+    }
+
     public void loanBookToUser(int bookId, int userId) {
         Book book = findBookById(bookId);
         User user = findUserById(userId);
@@ -79,6 +94,10 @@ public class BookacheController {
 
     public User findUserById(int id) {
         return users.stream().filter(u -> u.getId() == id).findFirst().orElse(null);
+    }
+
+    public void saveAllBooks(List<Book> books) {
+        bookDao.saveAllBooks(books);
     }
 }
 

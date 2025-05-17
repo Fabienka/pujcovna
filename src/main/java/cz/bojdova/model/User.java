@@ -27,6 +27,13 @@ private List<Book> borrowedBooks;
         this.email = email;
         this.borrowedBooks = new ArrayList<>();
     }
+    // Constructor without borrowedBooks
+    public User(String name, String email) {
+        this.id = 0; // Default id, can be set later
+        this.name = name;
+        this.email = email;
+        this.borrowedBooks = new ArrayList<>();
+    }
     // Getter for id
     public int getId() {
         return id;
