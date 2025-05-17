@@ -6,14 +6,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import cz.bojdova.dao.BookDao;
+import cz.bojdova.dao.UserDao;
 import cz.bojdova.dao.impl.BookDaoImpl;
+import cz.bojdova.dao.impl.UserDaoImpl;
 import cz.bojdova.model.Book;
 import cz.bojdova.model.User;
-import cz.bojdova.util.IdGenerator;
 import cz.bojdova.view.MainGUI;
-import cz.bojdova.dao.UserDao;
-import cz.bojdova.dao.impl.UserDaoImpl;
-import cz.bojdova.util.IdGenerator;
 
 public class Main {
     public static void main(String[] args) {
@@ -29,7 +27,7 @@ public class Main {
         List<Book> bookList = bookDao.getAllBooks();
         List<User> userList = userDao.getAllUsers();
 
-        IdGenerator idGenerator = new IdGenerator(bookList, userList);
+        //IdGenerator idGenerator = new IdGenerator(bookList, userList);
 
 
         // Create and display the main application window

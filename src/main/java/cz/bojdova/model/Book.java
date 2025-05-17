@@ -7,6 +7,9 @@ public class Book {
     private String genre;
     private boolean available;
 
+    public Book() {
+        // Default constructor for gson
+    }
     public Book(int id, String title, String author, String genre, boolean available) {
         this.id = id;
         this.title = title;

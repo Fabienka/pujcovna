@@ -18,14 +18,14 @@ public class BookDaoImpl implements BookDao {
     @Override
     public List<Book> getAllBooks() {
         try {
-            scanner = new Scanner(new File("bookache/books.json"));
-            // Předpokládáme, že soubor obsahuje JSON pole knih
+            scanner = new Scanner(new File("books.json"));
+            // Načtení obsahu souboru do Stringu
             StringBuilder jsonBuilder = new StringBuilder();
             while (scanner.hasNextLine()) {
                 jsonBuilder.append(scanner.nextLine());
             }
             String json = jsonBuilder.toString();
-            // Předpokládáme, že máme třídu Book, která odpovídá struktuře JSON
+            // Převod JSON na pole objektů Book
             Book[] booksArray = gson.fromJson(json, Book[].class);
             // Převod pole na seznam
             List<Book> books = List.of(booksArray);
@@ -43,13 +43,21 @@ public class BookDaoImpl implements BookDao {
                 scanner.close();
             }
         }
-        
-        // Zde byste měli implementovat logiku pro načtení všech knih z databáze nebo jiného úložiště
-        return null; // Návrat prázdného seznamu jako příklad
+        // Pokud dojde k chybě, vrátíme prázdný seznam
+        return null; 
     }
 
     @Override
     public void saveAllBooks(List<Book> books) {
-        // Zde byste měli implementovat logiku pro uložení seznamu knih do databáze nebo jiného úložiště
+        // Implementace pro uložení seznamu knih do souboru
+        try {
+            String json = gson.toJson(books);
+            // Uložení JSON do souboru
+            File file = new File("books.json");
+            java.nio.file.Files.write(file.toPath(), json.getBytes());
+        } catch (Exception e) {
+            System.out.println("Nastala chyba při ukládání dat do souboru.");
+            e.printStackTrace();
+        }
     }
 }
