@@ -1,26 +1,37 @@
-
-    [
-        {
-            "id": 1,
-            "title": "To Kill a Mockingbird",
-            "author": "Harper Lee",
-            "genre": "Fiction",
-            "available": true
-        },
-        {
-            "id": 2,
-            "title": "1984",
-            "author": "George Orwell",
-            "genre": "Dystopian",
-            "available": true
-        },
-        {
-            "id": 3,
-            "title": "Ready Player One",
-            "author": "Ernest Cline",
-            "genre": "Science Fiction",
-            "available": true
-        }
-    ]
-
-
+[
+    {
+       "id":0,
+       "title":"To Kill a Mockingbird",
+       "author":"Harper Lee",
+       "genre":"Fiction",
+       "available":true
+    },
+    {
+       "id":0,
+       "title":"1984",
+       "author":"George Orwell",
+       "genre":"Dystopian",
+       "available":true
+    },
+    {
+       "id":0,
+       "title":"Ready Player One",
+       "author":"Ernest Cline",
+       "genre":"Science Fiction",
+       "available":true
+    },
+    {
+       "id":0,
+       "title":"Nova kniha",
+       "author":"Ja",
+       "genre":"Ruzny",
+       "available":true
+    },
+    {
+       "id":0,
+       "title":"R.U.R.",
+       "author":"Karel Čapek",
+       "genre":"Science Fiction",
+       "available":true
+    }
+ ]
