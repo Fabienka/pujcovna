@@ -1,0 +1,26 @@
+# Java build files
+*.class
+*.war
+*.ear
+*.jar
+
+# Maven build directory
+target/
+
+# Gradle build directory
+build/
+
+# idea project files
+.idea/
+
+
+# Eclipse project files
+.classpath
+.project
+.settings/
+
+# NetBeans project files
+nbproject/
+
+# VSCode project files
+.vscode/
