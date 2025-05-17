@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import static java.lang.Integer.parseInt;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,21 +24,20 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 
-import cz.bojdova.util.IdGenerator;
-import cz.bojdova.dao.BookDao;
-import cz.bojdova.dao.impl.BookDaoImpl;
-import cz.bojdova.model.Book;
-import cz.bojdova.model.User;
+import cz.bojdova.controller.BookacheController;
+
+
 public class MainGUI {
     private JFrame frame;
     private JTable bookTable;
-    private DefaultTableModel tableModel;
-    private List<Book> bookList;
-    private BookDao bookDao;
+    private JTable loanTable;
+    private DefaultTableModel tableModelUser;
+    private DefaultTableModel tableModelBook;
+    private BookacheController controller;
+  
+    private JTable userTable;
 
     public MainGUI() {
-        bookDao = new BookDaoImpl();
-        bookList = new ArrayList<>(bookDao.getAllBooks());
         createAndShowGUI();
     }
 
@@ -68,6 +68,19 @@ public class MainGUI {
         titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
         titleLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
         panel.add(titleLabel);
+        tableModelUser = new DefaultTableModel(new String[]{"User inicials", "Books loaned", "Last loan date"}, 0);
+        userTable = new JTable(tableModelUser);
+        JScrollPane scrollPaneUser = new JScrollPane(userTable);
+        panel.add(scrollPaneUser, BorderLayout.CENTER);
+        List<User> users = controller.getUsers();
+        for (User user : users) {
+            tableModelUser.addRow(new Object[]{user.getName(), user.getEmail(), user.getBorrowedBooksName()});
+        }
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
         return panel;
     }
     private JPanel createBookPanel() {
@@ -77,13 +90,13 @@ public class MainGUI {
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(titleLabel, BorderLayout.NORTH);
 
-        tableModel = new DefaultTableModel(new String[]{"Title", "Author", "Genre", "Available"}, 0);
-        bookTable = new JTable(tableModel);
+        tableModelBook = new DefaultTableModel(new String[]{"Title", "Author", "Genre", "Available"}, 0);
+        bookTable = new JTable(tableModelBook);
         JScrollPane scrollPane = new JScrollPane(bookTable);
         panel.add(scrollPane, BorderLayout.CENTER);
 
         for (Book book : bookList) {
-            tableModel.addRow(new Object[]{book.getTitle(), book.getAuthor(), book.getGenre(), book.isAvailable() ? "Yes" : "No"});
+            tableModelBook.addRow(new Object[]{book.getTitle(), book.getAuthor(), book.getGenre(), book.isAvailable() ? "Yes" : "No"});
         }
 
         JPanel buttonPanel = new JPanel();
@@ -92,9 +105,9 @@ public class MainGUI {
 
         JButton addButton = createSizedButton("Add book");
         
-        List<Integer> bookIds = bookList.stream().map(Book::getId).toList();
-        List<Integer> userIds = userList.stream().map(User::getId).toList();
-        IdGenerator idGenerator = new IdGenerator(bookIds, userIds);
+        //List<Integer> bookIds = bookList.stream().map(Book::getId).toList();
+        //List<Integer> userIds = userList.stream().map(User::getId).toList();
+        //IdGenerator idGenerator = new IdGenerator(bookIds, userIds);
 
         addButton.addActionListener(e -> showAddBookDialog());
         buttonPanel.add(addButton);
@@ -150,11 +163,9 @@ public class MainGUI {
             String genre = genreField.getText().trim();
 
             if (!title.isEmpty() && !author.isEmpty() && !genre.isEmpty()) {
-                int newBookId = idGenerator.getNextBookId();
-                Book newBook = new Book(newBookId ,title, author, genre, true);
-                bookList.add(newBook);
-                tableModel.addRow(new Object[]{title, author, genre, true});
-                bookDao.saveAllBooks(bookList);
+                Book newBook = new Book(title, author, genre, true);
+                controller.addBook(newBook);
+                tableModelBook.addRow(new Object[]{title, author, genre, "Yes"});
                 dialog.dispose();
             } else {
                 JOptionPane.showMessageDialog(dialog, "Please fill all fields.", "Input Error", JOptionPane.ERROR_MESSAGE);
@@ -169,9 +180,13 @@ public class MainGUI {
     private void deleteSelectedBook() {
         int selectedRow = bookTable.getSelectedRow();
         if (selectedRow >= 0) {
-            tableModel.removeRow(selectedRow);
-            bookList.remove(selectedRow);
-            bookDao.saveAllBooks(bookList);
+            try {
+                controller.removeBook(parseInt(bookTable.getValueAt(selectedRow,0).toString()));
+                tableModelBook.removeRow(selectedRow);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         } else {
             JOptionPane.showMessageDialog(frame, "Please select a book to delete.");
         }
@@ -185,7 +200,7 @@ public class MainGUI {
                 JOptionPane.showMessageDialog(frame, "This book is already on loan.");
             } else {
                 book.setAvailable(false);
-                tableModel.setValueAt("No", selectedRow, 3);
+                tableModelBook.setValueAt("No", selectedRow, 3);
                 bookDao.saveAllBooks(bookList);
             }
         } else {
@@ -194,11 +209,11 @@ public class MainGUI {
     }
     private void saveChangesToFile() {
         List<Book> updatedList = new ArrayList<>();
-    
-        for (int i = 0; i < tableModel.getRowCount(); i++) {
-            String title = tableModel.getValueAt(i, 0).toString();
-            String author = tableModel.getValueAt(i, 1).toString();
-            String genre = tableModel.getValueAt(i, 2).toString();
+        // TODO přidat save pro users
+        for (int i = 0; i < tableModelBook.getRowCount(); i++) {
+            String title = tableModelBook.getValueAt(i, 0).toString();
+            String author = tableModelBook.getValueAt(i, 1).toString();
+            String genre = tableModelBook.getValueAt(i, 2).toString();
     
             updatedList.add(new Book(title, author, genre));
         }
