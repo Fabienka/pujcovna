@@ -17,6 +17,12 @@ public class Book {
         this.genre = genre;
         this.available = available;
     }
+    public Book(int id, String title, String author, String genre) {
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.genre = genre;
+    }
     public Book(String title, String author, String genre, boolean available) {
         this.title = title;
         this.author = author;

@@ -27,6 +27,7 @@ import javax.swing.table.DefaultTableModel;
 import cz.bojdova.controller.BookacheController;
 import cz.bojdova.model.Book;
 import cz.bojdova.model.User;
+import cz.bojdova.util.IdGenerator;
 
 
 public class MainGUI {
@@ -36,6 +37,7 @@ public class MainGUI {
     private DefaultTableModel tableModelUser;
     private DefaultTableModel tableModelBook;
     private final BookacheController controller = new BookacheController();
+    private final IdGenerator idGen = controller.initIdGenerator();
   
     private JTable userTable;
 
@@ -73,19 +75,57 @@ public class MainGUI {
         titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
         titleLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
         panel.add(titleLabel);
-        tableModelUser = new DefaultTableModel(new String[]{"User inicials", "Books loaned", "Last loan date"}, 0);
+        tableModelUser = new DefaultTableModel(new String[]{"ID", "User inicials", "Books loaned", "Last loan date"}, 0);
         userTable = new JTable(tableModelUser);
         JScrollPane scrollPaneUser = new JScrollPane(userTable);
         panel.add(scrollPaneUser, BorderLayout.CENTER);
         List<User> users = controller.getUsers();
         for (User user : users) {
-            tableModelUser.addRow(new Object[]{user.getName(), user.getEmail(), user.getBorrowedBooksName()});
+            tableModelUser.addRow(new Object[]{user.getId(),user.getName(), user.getBorrowedBooksName(), user.getLastLoanDate()});
         }
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+        JButton addButton = createSizedButton("Add user");
+        addButton.addActionListener(e -> showAddUserDialog());
+        buttonPanel.add(addButton);
+        buttonPanel.add(Box.createVerticalStrut(10));
+
+        JButton loanButton = createSizedButton("Retrieve book");
+        loanButton.addActionListener(e-> showLoanDialogForSelectedUser());
+        buttonPanel.add(loanButton);
+        buttonPanel.add(Box.createVerticalStrut(10));
+
+        JButton deleteButton = createSizedButton("Delete user");
+        deleteButton.addActionListener(e -> deleteSelectedUser());
+        buttonPanel.add(deleteButton);
+
+        JButton updateButton = createSizedButton("Update user");
+        updateButton.addActionListener(e -> {
+            int selectedRow = bookTable.getSelectedRow();
+            if (selectedRow >= 0) {
+                User user = fetchedUsers.get(selectedRow);
+                int id = parseInt(bookTable.getValueAt(selectedRow, 0).toString());
+                showUpdateUserDialog(id);
+                tableModelBook.setValueAt(user.getName(), selectedRow, 1);
+                tableModelBook.setValueAt(user.getBorrowedBooks(), selectedRow, 2);
+            } else {
+                JOptionPane.showMessageDialog(frame, "Please select a user to update.");
+            }
+        });
+        buttonPanel.add(updateButton);
+
+       // JButton saveButton = createSizedButton("Save changes"); 
+       // saveButton.addActionListener(e -> saveChangesToFile());
+       // buttonPanel.add(Box.createVerticalStrut(10));
+       // buttonPanel.add(saveButton);
+
+        panel.add(buttonPanel, BorderLayout.EAST);
+
+        JPanel searchPanel = createShowPanel();
+        panel.add(searchPanel, BorderLayout.SOUTH); // nebo NORTH podle potřeby
         return panel;
     }
 
@@ -104,7 +144,7 @@ public class MainGUI {
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(titleLabel, BorderLayout.NORTH);
 
-        tableModelBook = new DefaultTableModel(new String[]{"Title", "Author", "Genre", "Available"}, 0);
+        tableModelBook = new DefaultTableModel(new String[]{"ID", "Title", "Author", "Genre", "Available"}, 0);
         bookTable = new JTable(tableModelBook);
         JScrollPane scrollPane = new JScrollPane(bookTable);
         JPanel searchPanel = createShowPanel();
@@ -113,7 +153,7 @@ public class MainGUI {
 
        
         for (Book book : fetchedBooks) {
-            tableModelBook.addRow(new Object[]{book.getTitle(), book.getAuthor(), book.getGenre(), book.isAvailable() ? "Yes" : "No"});
+            tableModelBook.addRow(new Object[]{book.getId(), book.getTitle(), book.getAuthor(), book.getGenre(), book.isAvailable() ? "Yes" : "No"});
         }
 
         JPanel buttonPanel = new JPanel();
@@ -121,11 +161,6 @@ public class MainGUI {
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JButton addButton = createSizedButton("Add book");
-        
-        //List<Integer> bookIds = bookList.stream().map(Book::getId).toList();
-        //List<Integer> userIds = userList.stream().map(User::getId).toList();
-        //IdGenerator idGenerator = new IdGenerator(bookIds, userIds);
-
         addButton.addActionListener(e -> showAddBookDialog());
         buttonPanel.add(addButton);
         buttonPanel.add(Box.createVerticalStrut(10));
@@ -138,6 +173,23 @@ public class MainGUI {
         JButton deleteButton = createSizedButton("Delete book");
         deleteButton.addActionListener(e -> deleteSelectedBook());
         buttonPanel.add(deleteButton);
+
+        JButton updateButton = createSizedButton("Update book");
+        updateButton.addActionListener(e -> {
+            int selectedRow = bookTable.getSelectedRow();
+            if (selectedRow >= 0) {
+                Book book = fetchedBooks.get(selectedRow);
+                int id = parseInt(bookTable.getValueAt(selectedRow, 0).toString());
+                showUpdateBookDialog(id);
+                tableModelBook.setValueAt(book.getTitle(), selectedRow, 1);
+                tableModelBook.setValueAt(book.getAuthor(), selectedRow, 2);
+                tableModelBook.setValueAt(book.getGenre(), selectedRow, 3);
+                tableModelBook.setValueAt(book.isAvailable() ? "Yes" : "No", selectedRow, 4);
+            } else {
+                JOptionPane.showMessageDialog(frame, "Please select a book to update.");
+            }
+        });
+        buttonPanel.add(updateButton);
 
         JButton saveButton = createSizedButton("Save changes"); 
         saveButton.addActionListener(e -> saveChangesToFile());
@@ -180,9 +232,47 @@ public class MainGUI {
             String genre = genreField.getText().trim();
 
             if (!title.isEmpty() && !author.isEmpty() && !genre.isEmpty()) {
-                Book newBook = new Book(title, author, genre, true);
+                int newId = idGen.getNextBookId();
+                Book newBook = new Book(newId,title, author, genre, true);
                 controller.addBook(newBook);
-                tableModelBook.addRow(new Object[]{title, author, genre, "Yes"});
+                tableModelBook.addRow(new Object[]{newId,title, author, genre, "Yes"});
+                dialog.dispose();
+            } else {
+                JOptionPane.showMessageDialog(dialog, "Please fill all fields.", "Input Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        dialog.add(new JLabel()); // filler
+        dialog.add(addBtn);
+        dialog.setVisible(true);
+    }
+
+    private void showUpdateBookDialog(int id) {
+
+        JDialog dialog = new JDialog(frame, "Update Book", true);
+        dialog.setSize(300, 200);
+        dialog.setLayout(new GridLayout(4, 2, 5, 5));
+        dialog.setLocationRelativeTo(frame);
+
+        JTextField titleField = new JTextField();
+        JTextField authorField = new JTextField();
+        JTextField genreField = new JTextField();
+
+        dialog.add(new JLabel("Title:"));
+        dialog.add(titleField);
+        dialog.add(new JLabel("Author:"));
+        dialog.add(authorField);
+        dialog.add(new JLabel("Genre:"));
+        dialog.add(genreField);
+
+        JButton addBtn = new JButton("Update");
+        addBtn.addActionListener(e -> {
+            String title = titleField.getText().trim();
+            String author = authorField.getText().trim();
+            String genre = genreField.getText().trim();
+
+            if (!title.isEmpty() && !author.isEmpty() && !genre.isEmpty()) {
+                controller.updateBook(id, title, author, genre);
                 dialog.dispose();
             } else {
                 JOptionPane.showMessageDialog(dialog, "Please fill all fields.", "Input Error", JOptionPane.ERROR_MESSAGE);
@@ -229,6 +319,38 @@ public class MainGUI {
         dialog.setVisible(true);
     }
 
+    private void showUpdateUserDialog(int id) {
+
+        JDialog dialog = new JDialog(frame, "Update User", true);
+        dialog.setSize(300, 200);
+        dialog.setLayout(new GridLayout(4, 2, 5, 5));
+        dialog.setLocationRelativeTo(frame);
+
+        JTextField nameField = new JTextField();
+        JTextField emailField = new JTextField();
+
+        dialog.add(new JLabel("Name:"));
+        dialog.add(nameField);
+        dialog.add(new JLabel("E-mail:"));
+        dialog.add(emailField);
+
+        JButton addBtn = new JButton("Update");
+        addBtn.addActionListener(e -> {
+            String name = nameField.getText().trim();
+            String email = emailField.getText().trim();
+
+            if (!name.isEmpty() && !email.isEmpty()) {
+                controller.updateUser(id, name, email);
+                dialog.dispose();
+            } else {
+                JOptionPane.showMessageDialog(dialog, "Please fill all fields.", "Input Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        dialog.add(new JLabel()); // filler
+        dialog.add(addBtn);
+        dialog.setVisible(true);
+    }
     private void deleteSelectedBook() {
         int selectedRow = bookTable.getSelectedRow();
         if (selectedRow >= 0) {
@@ -297,11 +419,19 @@ public class MainGUI {
             if (selectedUser != null) {
                 // Půjč knihu
                 controller.loanBookToUser(selectedBook.getId(), selectedUser.getId());
-    
+                
                 // Aktualizuj stav v tabulce
                 tableModelBook.setValueAt("No", selectedRow, 3);
                 JOptionPane.showMessageDialog(frame, "Book loaned to " + selectedUser.getName() + ".");
             }
+        }
+    }
+
+    private void showLoanDialogForSelectedUser() {
+        int selectedRow = userTable.getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(frame, "Please select a user to loan a book.");
+            return;
         }
     }
     private void loanSelectedBook() {
@@ -320,17 +450,20 @@ public class MainGUI {
         }
     }
     private void saveChangesToFile() {
-        List<Book> updatedList = new ArrayList<>();
+        List<Book> updatedBookList = new ArrayList<>();
+        //List<User> updatedUserList = new ArrayList<>();
         // TODO přidat save pro users
         for (int i = 0; i < tableModelBook.getRowCount(); i++) {
-            String title = tableModelBook.getValueAt(i, 0).toString();
-            String author = tableModelBook.getValueAt(i, 1).toString();
-            String genre = tableModelBook.getValueAt(i, 2).toString();
+            int id = parseInt(tableModelBook.getValueAt(i, 0).toString());
+            String title = tableModelBook.getValueAt(i, 1).toString();
+            String author = tableModelBook.getValueAt(i, 2).toString();
+            String genre = tableModelBook.getValueAt(i, 3).toString();
+            boolean available = tableModelBook.getValueAt(i, 4).toString().equals("Yes");
     
-            updatedList.add(new Book(title, author, genre));
+            updatedBookList.add(new Book(id, title, author, genre, available));
         }
-    
-        fetchedBooks = updatedList; // aktualizuj interní seznam
+      
+        fetchedBooks = updatedBookList; // aktualizuj interní seznam
         controller.saveAllBooks(fetchedBooks);
         JOptionPane.showMessageDialog(frame, "Changes saved to books.json.");
     }

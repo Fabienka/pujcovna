@@ -9,6 +9,7 @@ import cz.bojdova.dao.impl.BookDaoImpl;
 import cz.bojdova.dao.impl.UserDaoImpl;
 import cz.bojdova.model.Book;
 import cz.bojdova.model.User;
+import cz.bojdova.util.IdGenerator;
 
 public class BookacheController {
     private final BookDao bookDao;
@@ -50,7 +51,13 @@ public class BookacheController {
     }
 
     public void removeBook(int id) {
-        books.remove(id);
+        System.out.println("Removing book with ID: " + id);
+        Book bookToRemove = findBookById(id);
+        if (bookToRemove == null) {
+            System.out.println("Book with ID " + id + " not found.");
+            return;
+        }
+        books.remove(bookToRemove);
         bookDao.saveAllBooks(books);
     }
 
@@ -91,13 +98,38 @@ public class BookacheController {
     public Book findBookById(int id) {
         return books.stream().filter(b -> b.getId() == id).findFirst().orElse(null);
     }
+    public Book updateBook(int id, String title, String author, String genre) {
+        Book book = findBookById(id);
+        if (book != null) {
+            book.setTitle(title);
+            book.setAuthor(author);
+            book.setGenre(genre);
+            bookDao.saveAllBooks(books);
+        }
+        return book;
+    }
 
+    public User updateUser(int id, String name, String email) {
+        User user = findUserById(id);
+        if (user != null) {
+            user.setName(name);
+            user.setEmail(email);
+            userDao.saveAllUsers(users);
+        }
+        return user;
+    }
     public User findUserById(int id) {
         return users.stream().filter(u -> u.getId() == id).findFirst().orElse(null);
     }
 
     public void saveAllBooks(List<Book> books) {
         bookDao.saveAllBooks(books);
+    }
+    public IdGenerator initIdGenerator() {
+        List<Integer> bookIds = books.stream().map(Book::getId).toList();
+        List<Integer> userIds = users.stream().map(User::getId).toList();
+
+        return new IdGenerator(bookIds, userIds);
     }
 }
 

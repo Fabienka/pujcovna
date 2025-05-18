@@ -1,6 +1,8 @@
 package cz.bojdova.model;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class User {
@@ -9,6 +11,8 @@ private int id;
 private String name;
 private String email;
 private List<Book> borrowedBooks;
+private Date lastLoanDate;
+
 
     // Default constructor for Gson
     public User() {
@@ -19,6 +23,7 @@ private List<Book> borrowedBooks;
         this.name = name;
         this.email = email;
         this.borrowedBooks = borrowedBooks;
+        this.lastLoanDate = new Date(); // Set to current date
 }
     // Constructor without borrowedBooks
     public User(int id, String name, String email) {
@@ -26,13 +31,15 @@ private List<Book> borrowedBooks;
         this.name = name;
         this.email = email;
         this.borrowedBooks = new ArrayList<>();
+        this.lastLoanDate = new Date(); // Set to current date
     }
-    // Constructor without borrowedBooks
+    // Constructor without id and borrowedBooks
     public User(String name, String email) {
         this.id = 0; // Default id, can be set later
         this.name = name;
         this.email = email;
         this.borrowedBooks = new ArrayList<>();
+        this.lastLoanDate = new Date(); // Set to current date
     }
     // Getter for id
     public int getId() {
@@ -48,7 +55,6 @@ private List<Book> borrowedBooks;
         this.name = name;
     }
 
-    // Getter and Setter for email
     public String getEmail() {
         return email;
     }
@@ -66,15 +72,31 @@ private List<Book> borrowedBooks;
                 '}';
     }
 
+    public String getLastLoanDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss z");
+        if (lastLoanDate == null) {
+            return "No loan date available";
+        }
+        return sdf.format(lastLoanDate);
+    }
+    public void setLastLoanDate(Date lastLoanDate) {
+        this.lastLoanDate = lastLoanDate;
+    }
+    public void updateLastLoanDate() {
+        this.lastLoanDate = new Date(); // Set to current date
+    }
+
     public List<Book> getBorrowedBooks() {
         return borrowedBooks;
     }
     public void setBorrowedBooks(ArrayList<Book> borrowedBooks) {
         this.borrowedBooks = borrowedBooks;
+        updateLastLoanDate();
     }
 
     public void addBorrowedBook(Book book) {
         this.borrowedBooks.add(book);
+        updateLastLoanDate();
     }
     public void removeBorrowedBook(Book book) {
         this.borrowedBooks.remove(book);
@@ -96,4 +118,6 @@ private List<Book> borrowedBooks;
         sb.setLength(sb.length() - 2); // Remove trailing ", "
         return sb.toString();
     }
+
+
 }
