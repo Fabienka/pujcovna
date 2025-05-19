@@ -75,9 +75,11 @@ public class BookacheController {
         Book book = findBookById(bookId);
         User user = findUserById(userId);
 
+
         if (book != null && user != null && book.isAvailable()) {
             book.setAvailable(false);
             user.getBorrowedBooks().add(book);
+            user.updateLastLoanDate();
             bookDao.saveAllBooks(books);
             userDao.saveAllUsers(users);
         }

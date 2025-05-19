@@ -31,13 +31,7 @@ public class UserDaoImpl implements UserDao {
             
             // Převod JSON na pole objektů User
             User[] usersArray = gson.fromJson(json, User[].class);
-            System.out.println("Načtení uživatelů z JSON jako pole:");
-            System.out.println(Arrays.toString(usersArray));
             List<User> users = new ArrayList<>(Arrays.asList(usersArray));
-
-            // Převod pole na seznam
-            System.out.println("Načtení uživatelů:");
-            System.out.println(users);
             return users;
         } catch (FileNotFoundException e) {
             System.out.println("Soubor nebyl nalezen.");

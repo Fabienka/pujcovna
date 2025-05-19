@@ -35,7 +35,6 @@ private Date lastLoanDate;
     }
     // Constructor without id and borrowedBooks
     public User(String name, String email) {
-        this.id = 0; // Default id, can be set later
         this.name = name;
         this.email = email;
         this.borrowedBooks = new ArrayList<>();
