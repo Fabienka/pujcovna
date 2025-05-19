@@ -7,45 +7,43 @@ import java.util.List;
 
 public class User {
 
-private int id;
-private String name;
-private String email;
-private List<Book> borrowedBooks;
-private Date lastLoanDate;
+    private int id;
+    private String name;
+    private String email;
+    private List<Book> borrowedBooks;
+    private Date lastLoanDate;
 
-
-    // Default constructor for Gson
+    // Konstruktor pro Gson
     public User() {
     }
-    // Constructor
+
+    // Konstruktor s výpůjčkami
     public User(int id, String name, String email, ArrayList<Book> borrowedBooks) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.borrowedBooks = borrowedBooks;
-        this.lastLoanDate = new Date(); // Set to current date
-}
-    // Constructor without borrowedBooks
-    public User(int id, String name, String email) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.borrowedBooks = new ArrayList<>();
-        this.lastLoanDate = new Date(); // Set to current date
+        this.lastLoanDate = new Date();
     }
-    // Constructor without id and borrowedBooks
+
+    // Konstruktor bez výpůjček
+    public User(int id, String name, String email) {
+        this(id, name, email, new ArrayList<>());
+    }
+
+    // Konstruktor bez ID a výpůjček
     public User(String name, String email) {
         this.name = name;
         this.email = email;
         this.borrowedBooks = new ArrayList<>();
-        this.lastLoanDate = new Date(); // Set to current date
     }
-    // Getter for id
+
+    // ID uživatele
     public int getId() {
         return id;
     }
 
-    // Getter and Setter for name
+    // Jméno uživatele
     public String getName() {
         return name;
     }
@@ -54,6 +52,7 @@ private Date lastLoanDate;
         this.name = name;
     }
 
+    // E-mail
     public String getEmail() {
         return email;
     }
@@ -62,33 +61,28 @@ private Date lastLoanDate;
         this.email = email;
     }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", email='" + email + '\'' +
-                '}';
-    }
-
+    // Poslední datum výpůjčky (formátované)
     public String getLastLoanDate() {
+        if (lastLoanDate == null) return "No loan date available";
         SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss z");
-        if (lastLoanDate == null) {
-            return "No loan date available";
-        }
         return sdf.format(lastLoanDate);
     }
+
     public void setLastLoanDate(Date lastLoanDate) {
         this.lastLoanDate = lastLoanDate;
     }
+
+    // Aktualizace na aktuální datum
     public void updateLastLoanDate() {
-        this.lastLoanDate = new Date(); // Set to current date
+        this.lastLoanDate = new Date();
     }
 
+    // Výpůjčky
     public List<Book> getBorrowedBooks() {
         return borrowedBooks;
     }
-    public void setBorrowedBooks(ArrayList<Book> borrowedBooks) {
+
+    public void setBorrowedBooks(List<Book> borrowedBooks) {
         this.borrowedBooks = borrowedBooks;
         updateLastLoanDate();
     }
@@ -97,15 +91,20 @@ private Date lastLoanDate;
         this.borrowedBooks.add(book);
         updateLastLoanDate();
     }
+
     public void removeBorrowedBook(Book book) {
         this.borrowedBooks.remove(book);
     }
+
     public void clearBorrowedBooks() {
         this.borrowedBooks.clear();
     }
+
     public boolean hasBorrowedBooks() {
         return !this.borrowedBooks.isEmpty();
     }
+
+    // Vrací seznam názvů vypůjčených knih jako text
     public String getBorrowedBooksName() {
         if (borrowedBooks == null || borrowedBooks.isEmpty()) {
             return "No borrowed books";
@@ -114,9 +113,14 @@ private Date lastLoanDate;
         for (Book book : borrowedBooks) {
             sb.append(book.getTitle()).append(", ");
         }
-        sb.setLength(sb.length() - 2); // Remove trailing ", "
+        sb.setLength(sb.length() - 2); // Odstraň poslední čárku a mezeru
         return sb.toString();
     }
 
-
+    // Textová reprezentace uživatele
+    @Override
+    public String toString() {
+        return String.format("User[id=%d, name='%s', email='%s', borrowedBooks=%d]",
+                id, name, email, borrowedBooks != null ? borrowedBooks.size() : 0);
+    }
 }

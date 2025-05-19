@@ -15,10 +15,6 @@ public class Main {
             e.printStackTrace();
         }
 
-
-        //IdGenerator idGenerator = new IdGenerator(bookList, userList);
-
-
         // Create and display the main application window
         SwingUtilities.invokeLater(() -> { MainGUI mainGUI = new MainGUI(); });
     }
