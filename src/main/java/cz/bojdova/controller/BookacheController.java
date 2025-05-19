@@ -45,16 +45,11 @@ public class BookacheController {
         bookDao.saveAllBooks(books);
     }
 
-    public void removeBook(Book book) {
-        books.remove(book);
-        bookDao.saveAllBooks(books);
-    }
-
     public void removeBook(int id) {
-        System.out.println("Removing book with ID: " + id);
+        System.out.println("[INFO] Removing book with ID: " + id);
         Book bookToRemove = findBookById(id);
         if (bookToRemove == null) {
-            System.out.println("Book with ID " + id + " not found.");
+            System.out.println("[WARN] Book with ID " + id + " not found.");
             return;
         }
         books.remove(bookToRemove);
@@ -67,10 +62,10 @@ public class BookacheController {
     }
 
     public void removeUser(int id) {
-        System.out.println("Removing user with ID: " + id);
+        System.out.println("[INFO] Removing user with ID: " + id);
         User userToRemove = findUserById(id);
         if (userToRemove == null) {
-            System.out.println("User with ID " + id + " not found.");
+            System.out.println("[WARN] User with ID " + id + " not found.");
             return;
         }
         users.remove(userToRemove);
@@ -81,14 +76,21 @@ public class BookacheController {
         Book book = findBookById(bookId);
         User user = findUserById(userId);
 
-
-        if (book != null && user != null && book.isAvailable()) {
-            book.setAvailable(false);
-            user.getBorrowedBooks().add(book);
-            user.updateLastLoanDate();
-            bookDao.saveAllBooks(books);
-            userDao.saveAllUsers(users);
+        if (book == null || user == null) {
+            System.out.println("[ERROR] Book or User not found.");
+            return;
         }
+
+        if (!book.isAvailable()) {
+            System.out.println("[WARN] Book is already on loan.");
+            return;
+        }
+
+        book.setAvailable(false);
+        user.getBorrowedBooks().add(book);
+        user.updateLastLoanDate();
+        bookDao.saveAllBooks(books);
+        userDao.saveAllUsers(users);
     }
 
     public void returnBookFromUser(int bookId, int userId) {
@@ -96,23 +98,37 @@ public class BookacheController {
         User user = findUserById(userId);
 
         if (book != null && user != null) {
-            user.getBorrowedBooks().removeIf(b -> b.getId() == bookId);
-            book.setAvailable(true);
-            bookDao.saveAllBooks(books);
-            userDao.saveAllUsers(users);
+            boolean removed = user.getBorrowedBooks().removeIf(b -> b.getId() == bookId);
+            if (removed) {
+                book.setAvailable(true);
+                bookDao.saveAllBooks(books);
+                userDao.saveAllUsers(users);
+            } else {
+                System.out.println("[WARN] Book not found in user's borrowed list.");
+            }
         }
     }
 
-    public Book findBookById(int id) {
-        return books.stream().filter(b -> b.getId() == id).findFirst().orElse(null);
-    }
     public Book updateBook(int id, String title, String author, String genre) {
         Book book = findBookById(id);
         if (book != null) {
             book.setTitle(title);
             book.setAuthor(author);
             book.setGenre(genre);
+
+            // Synchronizace vypůjčených kopií u uživatelů
+            for (User user : users) {
+                user.getBorrowedBooks().stream()
+                        .filter(b -> b.getId() == id)
+                        .forEach(b -> {
+                            b.setTitle(title);
+                            b.setAuthor(author);
+                            b.setGenre(genre);
+                        });
+            }
+
             bookDao.saveAllBooks(books);
+            userDao.saveAllUsers(users);
         }
         return book;
     }
@@ -126,6 +142,11 @@ public class BookacheController {
         }
         return user;
     }
+
+    public Book findBookById(int id) {
+        return books.stream().filter(b -> b.getId() == id).findFirst().orElse(null);
+    }
+
     public User findUserById(int id) {
         return users.stream().filter(u -> u.getId() == id).findFirst().orElse(null);
     }
@@ -133,11 +154,14 @@ public class BookacheController {
     public void saveAllBooks(List<Book> books) {
         bookDao.saveAllBooks(books);
     }
+
+    public void saveAllUsers(List<User> users) {
+        userDao.saveAllUsers(users);
+    }
+
     public IdGenerator initIdGenerator() {
         List<Integer> bookIds = books.stream().map(Book::getId).toList();
         List<Integer> userIds = users.stream().map(User::getId).toList();
-
         return new IdGenerator(bookIds, userIds);
     }
 }
-
