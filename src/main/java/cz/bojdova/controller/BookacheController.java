@@ -67,7 +67,13 @@ public class BookacheController {
     }
 
     public void removeUser(int id) {
-        users.remove(id);
+        System.out.println("Removing user with ID: " + id);
+        User userToRemove = findUserById(id);
+        if (userToRemove == null) {
+            System.out.println("User with ID " + id + " not found.");
+            return;
+        }
+        users.remove(userToRemove);
         userDao.saveAllUsers(users);
     }
 
