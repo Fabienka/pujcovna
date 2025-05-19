@@ -2,7 +2,7 @@
 # 📚 Bookache - Book Lending Manager
 Toto je školní projekt do předmětu KPRO1 
 
-**Bookache** je desktopová Java aplikace pro správu půjčování knih pomocí přehledného grafického rozhraní (Swing). Aplikace umožňuje přidávat, upravovat, mazat a půjčovat knihy i uživatele.
+**Bookache** je desktopová Java aplikace pro správu půjčování knih pomocí přehledného grafického rozhraní (Swing). Aplikace umožňuje přidávat, upravovat, mazat a půjčovat knihy i uživatele. 
 
 ---
 
@@ -33,17 +33,17 @@ Toto je školní projekt do předmětu KPRO1
 ---
 
 ## 🧱 Struktura balíčků
-cz/bojdova/
-├── controller/ // Logika aplikace
-├── dao/ // Rozhraní pro přístup k datům
-├── dao/impl/ // Implementace přístupu k datům (JSON)
-├── model/ // Datové třídy Book, User
-├── util/ // Pomocné utility (např. IdGenerator)
-├── view/
-│ ├── MainGUI.java // Hlavní GUI okno
-│ ├── dialog/ // Všechny modální dialogy
-│ └── panel/ // Panely pro záložky knih a uživatelů
-│ └── util/ // Pomocné GUI utility (např. ButtonFactory)
+- cz/bojdova/
+- ├── controller/ // Logika aplikace
+- ├── dao/ // Rozhraní pro přístup k datům
+- ├── dao/impl/ // Implementace přístupu k datům (JSON)
+- ├── model/ // Datové třídy Book, User
+- ├── util/ // Pomocné utility (např. IdGenerator)
+- ├── view/
+- │ ├── MainGUI.java // Hlavní GUI okno
+- │ ├── dialog/ // Všechny modální dialogy
+- │ └── panel/ // Panely pro záložky knih a uživatelů
+- │ └── util/ // Pomocné GUI utility (např. ButtonFactory)
 
 
 ---
