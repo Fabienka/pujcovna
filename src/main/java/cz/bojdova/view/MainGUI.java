@@ -37,6 +37,7 @@ public class MainGUI {
     private JTable userTable;
     private DefaultTableModel tableModelUser;
     private DefaultTableModel tableModelBook;
+
     private final BookacheController controller = new BookacheController();
     private final IdGenerator idGen = controller.initIdGenerator();
   
@@ -72,6 +73,7 @@ public class MainGUI {
 
         tableModelUser = new DefaultTableModel(new String[]{"ID", "User inicials", "Books loaned", "Last loan date"}, 0);
         userTable = new JTable(tableModelUser);
+
         JScrollPane scrollPaneUser = new JScrollPane(userTable);
         panel.add(scrollPaneUser, BorderLayout.CENTER);
         List<User> users = controller.getUsers();
@@ -117,19 +119,9 @@ public class MainGUI {
 
         panel.add(buttonPanel, BorderLayout.EAST);
 
-        JPanel searchPanel = createShowPanel();
-        panel.add(searchPanel, BorderLayout.SOUTH); // nebo NORTH podle potřeby
         return panel;
     }
 
-    private JPanel createShowPanel() {
-        JPanel searchPanel = new JPanel(new BorderLayout(5, 5));
-        JLabel searchLabel = new JLabel("Search:");
-        JTextField searchField = new JTextField();
-        searchPanel.add(searchLabel, BorderLayout.WEST);
-        searchPanel.add(searchField, BorderLayout.CENTER);
-        return searchPanel;
-    }
     private JPanel createBookPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         JLabel titleLabel = new JLabel("Books for loan");
@@ -139,11 +131,9 @@ public class MainGUI {
 
         tableModelBook = new DefaultTableModel(new String[]{"ID", "Title", "Author", "Genre", "Available"}, 0);
         bookTable = new JTable(tableModelBook);
-        JScrollPane scrollPane = new JScrollPane(bookTable);
-        JPanel searchPanel = createShowPanel();
-        panel.add(scrollPane, BorderLayout.CENTER);
-        panel.add(searchPanel, BorderLayout.SOUTH); // nebo NORTH podle potřeby
 
+        JScrollPane scrollPane = new JScrollPane(bookTable);
+        panel.add(scrollPane, BorderLayout.CENTER);
        
         for (Book book : fetchedBooks) {
             tableModelBook.addRow(new Object[]{book.getId(), book.getTitle(), book.getAuthor(), book.getGenre(), book.isAvailable() ? "Yes" : "No"});
